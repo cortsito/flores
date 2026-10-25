@@ -1,0 +1,39 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gatito · Del trazo al carácter</title><style>*{box-sizing:border-box}html,body{margin:0;background:#000;color:#d9cdbd;font-family:monospace}header{padding:28px 5vw 16px;font-size:11px;letter-spacing:2px}main{max-width:1200px;margin:auto;padding:0 4vw 32px;display:grid;grid-template-columns:1fr 1fr;gap:28px}figure{margin:0;min-width:0}canvas{width:100%;height:auto;display:block;background:#000}figcaption{border-top:1px solid #26211e;padding-top:16px;font-size:11px;line-height:1.7;color:#958a7c}header p{font-size:10px;letter-spacing:0;line-height:1.8;color:#8d8377;max-width:650px}@media(max-width:650px){main{grid-template-columns:1fr;gap:40px}header{padding-top:20px}}</style></head><body><header>DEL TRAZO AL CARÁCTER<p>Reconstrucción manual con curvas Canvas. La foto no se carga ni se muestrea: los caracteres salen del dibujo de la izquierda.</p></header><main><figure><canvas id="drawing" width="660" height="720" aria-label="Gatito, rosa y mano amarilla dibujados con curvas Canvas"></canvas><figcaption>01 / DIBUJO EN CANVAS<br>Curvas, degradados y trazos de pelo. Interpretación del meme, no recorte fotográfico.</figcaption></figure><figure><canvas id="ascii" width="660" height="720" aria-label="Conversión ASCII del dibujo Canvas"></canvas><figcaption>02 / EL MISMO DIBUJO EN ASCII<br>Color y densidad muestreados exclusivamente del canvas de la izquierda.</figcaption></figure></main><script>
+'use strict';
+const art=document.querySelector('#drawing'),p=art.getContext('2d');p.scale(3,3);p.fillStyle='#000';p.fillRect(0,0,220,240);
+let seed=156;const rnd=()=>((seed=(seed*1664525+1013904223)>>>0)/4294967296);
+function shape(path,fill,stroke,width=.5){const a=new Path2D(path);if(fill){p.fillStyle=fill;p.fill(a)}if(stroke){p.strokeStyle=stroke;p.lineWidth=width;p.stroke(a)}return a}
+function gradient(x,y,r,stops){let g=p.createRadialGradient(x,y,0,x,y,r);for(const [at,color]of stops)g.addColorStop(at,color);return g}
+function ellipse(x,y,rx,ry,color,rotation=0){p.fillStyle=color;p.beginPath();p.ellipse(x,y,rx,ry,rotation,0,Math.PI*2);p.fill()}
+// Torse courbé, cou étroit et épaule tournée comme dans la référence.
+const body=shape('M 74 159 C 58 169 62 189 68 206 L 72 236 L 166 236 C 174 217 173 194 159 179 C 154 166 139 156 129 153 Z',gradient(98,179,74,[[0,'#9c8b6a'],[.4,'#716148'],[1,'#28221e']]));
+// Contour de tête asymétrique et oreille droite très haute.
+const headPath='M 38 91 C 27 77 32 60 45 52 C 46 38 56 31 68 31 C 79 17 102 18 122 25 L 145 29 C 153 12 164 2 176 1 C 178 24 175 49 167 67 C 176 87 169 109 158 125 C 156 144 137 161 115 169 C 92 177 62 161 52 148 C 37 141 34 126 36 112 C 29 104 32 95 38 91 Z';
+const head=shape(headPath,gradient(88,123,102,[[0,'#9d8a65'],[.44,'#796347'],[.78,'#51402e'],[1,'#332b24']]));
+shape('M 148 53 Q 158 22 171 8 Q 175 39 163 64 Z',gradient(161,39,33,[[0,'#9e7d66'],[1,'#514033']]));
+shape('M 48 57 Q 41 40 50 32 Q 65 36 75 43 Z','#5d4938');
+// Poils déterministes, confinés à la silhouette : aucun pixel de la photo.
+p.save();p.clip(body);p.clip(new Path2D('M 0 0 H 220 V 240 H 0 Z'));for(let i=0;i<2300;i++){let x=50+rnd()*130,y=150+rnd()*90,v=80+rnd()*70;p.strokeStyle=`rgba(${v|0},${v*.86|0},${v*.67|0},${.12+rnd()*.2})`;p.lineWidth=.25+rnd()*.3;p.beginPath();p.moveTo(x,y);p.quadraticCurveTo(x-1,y+1,x-2,y+3+rnd()*4);p.stroke()}p.restore();
+p.save();p.clip(head);for(let i=0;i<4400;i++){let x=25+rnd()*155,y=rnd()*177,v=80+rnd()*95;p.strokeStyle=`rgba(${v|0},${v*.83|0},${v*.61|0},${.08+rnd()*.25})`;p.lineWidth=.18+rnd()*.35;let direction=(x-105)/60;p.beginPath();p.moveTo(x,y);p.quadraticCurveTo(x+direction,y+1.5,x+direction*2,y+3+rnd()*3);p.stroke()}p.restore();
+// Ombres tabby et volumes du museau.
+shape('M 76 43 Q 86 67 83 87 Q 94 69 90 40 Z','#34291f88');shape('M 103 35 Q 109 58 102 79 Q 118 63 117 39 Z','#30261d88');shape('M 129 44 Q 134 63 125 78 L 141 64 Z','#2b251e88');
+shape('M 45 122 Q 59 123 66 130 M 46 133 Q 58 135 62 139 M 141 133 Q 155 123 159 117',null,'#493b2c',3);
+ellipse(92,145,21,15,gradient(91,144,24,[[0,'#b09a73'],[1,'#7b684c']]));ellipse(117,137,20,17,gradient(113,138,24,[[0,'#b5a17b'],[1,'#796347']]));
+// Yeux inclinés, pupilles larges et reflets discrets : pas d'yeux cartoon blancs.
+function eye(x,y,rx,ry,angle){p.save();p.translate(x,y);p.rotate(angle);ellipse(0,0,rx+4,ry+4,'#6e5d43');ellipse(0,0,rx+1.5,ry+1.5,'#a08d65');ellipse(0,0,rx,ry,gradient(-3,-4,rx*1.7,[[0,'#342b22'],[.55,'#171310'],[1,'#090807']]));ellipse(-4,-6,3,2.1,'#c5b89b66');ellipse(-1,-8,1.2,.7,'#ded3b266');p.restore()}
+eye(72,117,16,20,-.48);eye(131,100,17,21,.38);
+shape('M 88 146 Q 99 139 110 144 Q 110 151 102 156 Q 93 154 88 146 Z',gradient(100,145,15,[[0,'#4a3329'],[1,'#241a17']]));shape('M 102 155 Q 105 160 101 164 M 101 164 Q 91 165 88 160 M 101 164 Q 111 163 114 156',null,'#4a392b',1.1);
+shape('M 60 144 Q 43 143 30 146 M 60 150 Q 41 153 28 159 M 126 145 Q 146 143 155 139 M 126 149 Q 144 150 156 150',null,'#b9ac8755',.45);
+// Fleur rouge stylisée du meme : silhouette en coupe et pétales enroulés.
+shape('M 178 202 Q 170 166 178 124',null,'#718a48',4);
+shape('M 177 155 Q 159 151 156 141 Q 173 142 177 155 Z','#4d652f');
+shape('M 175 145 Q 158 142 154 120 L 150 98 Q 137 87 151 84 Q 165 81 171 88 Q 182 77 194 85 Q 204 93 218 89 Q 216 102 203 108 Q 206 130 191 143 Q 181 151 175 145 Z',gradient(175,109,48,[[0,'#ff5f50'],[.55,'#e5292c'],[1,'#a71925']]));
+shape('M 155 92 Q 168 94 177 107 Q 181 126 175 141 Q 188 134 190 117 Q 188 99 174 91 Q 163 85 155 92 Z','#ed352f');shape('M 176 91 Q 185 83 198 91 Q 190 95 186 106',null,'#ff8270',1.7);shape('M 151 88 Q 163 86 173 96 Q 182 102 183 117',null,'#ff8b7666',2);
+// Main emoji jaune : silhouette de poing et doigts repliés, indépendante du chat.
+shape('M 219 184 Q 204 176 194 180 Q 182 173 171 182 Q 159 182 157 194 L 155 220 Q 154 231 163 235 L 220 238 Z',gradient(190,205,48,[[0,'#ffe79b'],[.5,'#f5c75d'],[1,'#b27c27']]),'#d5a348',.7);
+shape('M 219 188 Q 203 182 186 188 Q 178 192 180 200 Q 183 207 194 206 L 220 206',gradient(197,191,30,[[0,'#ffe6a0'],[1,'#d5a044']]),'#d9a548',1.5);
+shape('M 218 209 Q 202 205 187 211 Q 180 213 181 220 Q 184 229 198 227 L 220 229',gradient(198,213,31,[[0,'#ffe291'],[1,'#d8a044']]),'#d19b3c',1.5);
+shape('M 176 189 Q 163 191 165 205 L 167 222',null,'#bc8737',3);
+// Conversion uniquement depuis les courbes ci-dessus.
+const ascii=document.querySelector('#ascii'),q=ascii.getContext('2d'),sample=document.createElement('canvas');sample.width=165;sample.height=116;const sc=sample.getContext('2d',{willReadFrequently:true});sc.drawImage(art,0,0,165,116);const pixels=sc.getImageData(0,0,165,116).data,ramp=' .,:;i+tfjxX%#W@';q.fillStyle='#000';q.fillRect(0,0,660,720);q.font="6.5px 'Courier New',monospace";q.textBaseline='top';for(let y=0;y<116;y++)for(let x=0;x<165;x++){let n=(y*165+x)*4,r=pixels[n],g=pixels[n+1],b=pixels[n+2],lum=.2126*r+.7152*g+.0722*b;if(lum<8)continue;let char=ramp[Math.min(ramp.length-1,Math.floor(Math.pow(lum/255,.65)*(ramp.length-1)))];q.fillStyle=`rgb(${r},${g},${b})`;q.fillText(char,x*4,y*720/116)}
+</script></body></html>

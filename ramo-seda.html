@@ -1,0 +1,66 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#000000"><title>Jardín de seda</title><style>html,body{margin:0;overflow:hidden;background:#000}canvas{display:block;width:100vw;height:100dvh}</style></head><body><canvas aria-label="Ramo ASCII de peonías rosa empolvado, tulipanes vino y flores de loto marfil"></canvas><script>
+'use strict';
+const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d'),source=document.createElement('canvas'),p=source.getContext('2d');source.width=700;source.height=900;let seed=217;const random=()=>((seed=(seed*1664525+1013904223)>>>0)/4294967296),rand=(a,b)=>a+(b-a)*random();
+const range=rand;
+function ellipse(x,y,rx,ry,color){p.fillStyle=color;p.beginPath();p.ellipse(x,y,rx,ry,0,0,Math.PI*2);p.fill()}
+function curve(a,b,c,d,color,width){p.strokeStyle=color;p.lineWidth=width;p.lineCap='round';p.beginPath();p.moveTo(...a);p.bezierCurveTo(...b,...c,...d);p.stroke()}
+function leaf(x,y,angle,len,width){p.save();p.translate(x,y);p.rotate(angle);let g=p.createLinearGradient(0,0,0,-len);g.addColorStop(0,'#17472c');g.addColorStop(.5,'#629f49');g.addColorStop(1,'#bed779');p.fillStyle=g;p.beginPath();p.moveTo(0,0);p.bezierCurveTo(-width,-len*.5,-width*.2,-len*.85,0,-len);p.bezierCurveTo(width*.25,-len*.75,width,-len*.25,0,0);p.fill();p.strokeStyle='#acbe6680';p.lineWidth=1;p.beginPath();p.moveTo(0,0);p.lineTo(0,-len);p.stroke();p.restore()}
+function flower(x,y,size,color,rotation){p.save();p.translate(x,y);p.rotate(rotation);p.scale(1,.88);
+for(let ring=0;ring<7;ring++){let radius=size*(1-ring*.125),count=11+ring*2;for(let i=0;i<count;i++){p.save();p.rotate(i*Math.PI*2/count+ring*1.74+range(-.1,.1));let length=radius*range(.9,1.08),w=radius*range(.25,.39),base=radius*.17;let g=p.createLinearGradient(-w,0,w,-length);g.addColorStop(0,color[0]);g.addColorStop(.5,color[1]);g.addColorStop(.88,color[2]);g.addColorStop(1,color[1]);p.fillStyle=g;p.beginPath();p.moveTo(-w*.18,-base);p.bezierCurveTo(-w*1.2,-length*.4,-w*1.15,-length*.83,-w*.65,-length*.95);p.bezierCurveTo(-w*.42,-length*1.08,-w*.15,-length*.91,0,-length);p.bezierCurveTo(w*.28,-length*1.08,w*.4,-length*.94,w*.68,-length*.96);p.bezierCurveTo(w*1.12,-length*.83,w*.95,-length*.36,w*.18,-base);p.closePath();p.fill();p.strokeStyle=color[2]+'88';p.lineWidth=.9;p.stroke();for(let j=0;j<5;j++){let xx=(j-2)*w*.23;p.strokeStyle=j%2?'#ffffff20':'#4d133b25';p.lineWidth=.7;p.beginPath();p.moveTo(0,-base);p.quadraticCurveTo(xx*.6,-length*.65,xx,-length*.94);p.stroke()}p.restore()}}
+p.restore()}
+// Loto de tres cuartos: pétalos laterales extendidos, centro amarillo y copa frontal.
+function lotus(x,y,r){p.save();p.translate(x,y);
+function petal(tx,ty,w,front){let g=p.createLinearGradient(0,12,tx,ty);g.addColorStop(0,'#a18955');g.addColorStop(.3,'#dfcdb0');g.addColorStop(.74,'#fff1dc');g.addColorStop(1,'#df9fb4');p.fillStyle=g;p.beginPath();p.moveTo(-r*.08,12);p.bezierCurveTo(tx*.25-w,ty*.16,tx-w*.48,ty*.66,tx,ty);p.bezierCurveTo(tx+w*.48,ty*.64,tx*.4+w,ty*.2,r*.08,12);p.closePath();p.fill();p.strokeStyle='#fcebd4bb';p.lineWidth=1.25;p.stroke();curve([0,8],[tx*.2,ty*.25],[tx*.8,ty*.8],[tx,ty*.94],'#bb8d9c60',.85)}
+// La silhouette est beaucoup plus large que haute, contrairement aux pivoines.
+for(const [tx,ty,w]of [[-.86,-.34,.28],[-.61,-.72,.28],[-.3,-.98,.27],[0,-1.1,.28],[.32,-.96,.27],[.64,-.69,.28],[.91,-.31,.28]])petal(tx*r,ty*r,w*r);
+// Étamines distinctes autour d'un réceptacle aplati.
+for(let i=0;i<19;i++){let a=i*Math.PI*2/19,xx=Math.cos(a)*r*.28,yy=-r*.18+Math.sin(a)*r*.085;curve([0,0],[xx*.7,-r*.12],[xx,yy-8],[xx,yy-12],'#d1a449',1.5);ellipse(xx,yy-12,2.2,3,'#f7d67a')}
+ellipse(0,-r*.19,r*.19,r*.085,'#e7bd5e');for(let i=0;i<9;i++){let a=i*2.4;ellipse(Math.cos(a)*r*.13,-r*.19+Math.sin(a)*r*.05,1.5,1.4,'#a88739')}
+for(const [tx,ty,w]of [[-.97,.01,.3],[.98,.01,.3],[-.62,.25,.33],[.65,.25,.33],[-.23,.34,.3],[.23,.34,.3]])petal(tx*r,ty*r,w*r,true);p.restore()}
+// Tulipe en coupe: une ouverture sombre et trois grands pétales enveloppants.
+function tulip(x,y,r,angle,color){p.save();p.translate(x,y);p.rotate(angle);
+let back=p.createLinearGradient(-r,-r,r,0);back.addColorStop(0,'#80354f');back.addColorStop(.5,color);back.addColorStop(1,'#521c36');p.fillStyle=back;p.beginPath();p.moveTo(0,9);p.bezierCurveTo(-r*.85,-r*.12,-r*.92,-r*1.05,-r*.58,-r*1.4);p.quadraticCurveTo(0,-r*1.68,r*.58,-r*1.4);p.bezierCurveTo(r*.92,-r*1.05,r*.85,-r*.12,0,9);p.fill();
+ellipse(0,-r*1.31,r*.53,r*.17,'#63233d');curve([-r*.53,-r*1.32],[-r*.15,-r*1.53],[r*.2,-r*1.53],[r*.53,-r*1.32],'#e4a0af',1.3);
+for(const side of [-1,1]){let g=p.createLinearGradient(side*r*.7,-r*.6,-side*r*.15,-r*.9);g.addColorStop(0,'#651e3d');g.addColorStop(.45,color);g.addColorStop(1,'#e89bae');p.fillStyle=g;p.beginPath();p.moveTo(0,9);p.bezierCurveTo(side*r*.85,-r*.15,side*r*.89,-r*.95,side*r*.6,-r*1.42);p.bezierCurveTo(side*r*.38,-r*1.55,-side*r*.16,-r*.86,0,9);p.fill();curve([0,5],[side*r*.18,-r*.45],[side*r*.25,-r*1.1],[side*r*.6,-r*1.42],'#f7b5bb99',1.4)}
+let front=p.createLinearGradient(-r*.3,0,r*.3,-r*1.25);front.addColorStop(0,'#752141');front.addColorStop(.5,color);front.addColorStop(1,'#f2acb8');p.fillStyle=front;p.beginPath();p.moveTo(0,10);p.bezierCurveTo(-r*.52,-r*.1,-r*.51,-r*.85,-r*.23,-r*1.26);p.quadraticCurveTo(0,-r*1.08,r*.26,-r*1.29);p.bezierCurveTo(r*.53,-r*.8,r*.5,-r*.09,0,10);p.fill();curve([-r*.23,-r*1.26],[-r*.08,-r*1.12],[r*.1,-r*1.12],[r*.26,-r*1.29],'#ffd0c9aa',1.25);p.restore()}
+
+function stem(x,y,width=3){p.strokeStyle='#689652';p.lineWidth=width;p.lineCap='round';p.beginPath();p.moveTo(rand(382,419),958);p.bezierCurveTo(401,790,x+(400-x)*.12,y+170,x,y);p.stroke()}
+function build(){seed=21;p.clearRect(0,0,700,900);
+// Base común de tallos: un solo punto de reunión, oculto en la corona floral.
+for(let i=0;i<24;i++){let x=range(145,565),y=range(220,670);p.strokeStyle=`rgb(${range(32,60)},${range(85,125)},${range(35,55)})`;p.lineWidth=range(2,4);p.beginPath();p.moveTo(range(324,377),862);p.bezierCurveTo(range(315,390),790,x+(350-x)*.2,y+120,x,y);p.stroke()}
+// Hojas estrechas asomando por un contorno continuo, sin abanico de tallos sueltos.
+for(const [x,y,angle,len,w]of [[210,260,-.7,90,18],[475,260,.6,100,18],[130,410,-1,88,17],[580,440,.9,87,17],[140,600,-1.1,85,18],[565,620,1,89,18],[225,720,-.8,95,20],[475,735,.7,90,18],[315,810,-.6,125,23],[385,810,.6,120,22]])leaf(x,y,angle,len,w);
+const blush=['#8b4b5b','#d999aa','#ffe0dd'],rose=['#753149','#c77d96','#f5c1cc'],wine=['#52243c','#9d5779','#d9a0b6'];
+// Cresta alta de tulipanes, con las bases hundidas entre las peonías.
+tulip(239,210,42,-.19,'#9c4b69');tulip(355,199,44,.08,'#cf8191');tulip(484,235,43,.31,'#a4516c');
+// Peonía alta delante de las bases de los tres tulipanes.
+flower(362,227,102,blush,-.12);
+// Masa principal entrelazada: tamaños alternos, centros desplazados y solapamiento.
+flower(271,305,119,blush,-.25);
+// Tulipán pequeño del plano posterior: la peonía derecha oculta parte de su copa.
+p.save();p.globalAlpha=.87;tulip(419,325,31,-.48,'#85415e');p.restore();
+flower(465,358,112,wine,.3);
+flower(208,517,124,rose,-.35);flower(457,566,124,blush,.22);
+flower(321,658,112,wine,-.12);
+// Loto intermedio: encajado en el hueco bajo las dos peonías superiores.
+p.save();p.translate(367,411);p.rotate(.18);p.scale(1,.83);lotus(0,0,58);p.restore();
+// Esta peonía tapa la base del loto y establece el solapamiento entre planos.
+flower(381,460,82,rose,.3);
+// Lotos laterales parcialmente integrados en la masa, no separados de ella.
+p.save();p.translate(144,385);p.rotate(-.32);lotus(0,0,85);p.restore();
+p.save();p.translate(563,482);p.rotate(.35);lotus(0,0,87);p.restore();
+// Tulipanes en primer plano SOBRE las corolas de peonía: un segundo plano de profundidad.
+// Loto pequeño entre la peonía baja y las copas centrales; sus puntas quedan detrás.
+p.save();p.translate(349,581);p.rotate(-.24);p.scale(1,.88);lotus(0,0,57);p.restore();
+tulip(315,475,43,-.19,'#a24464');tulip(416,489,46,.22,'#cb7b8d');
+// Tulipán grande y oblicuo en primer plano: base recogida hacia el centro del ramo.
+tulip(236,599,49,-.62,'#ce8299');
+tulip(528,666,43,.61,'#9c4765');tulip(490,741,35,.58,'#ca8295');
+// Punto claro inferior que cierra el óvalo floral y conduce hacia el haz de tallos.
+p.save();p.translate(391,733);p.rotate(.14);lotus(0,0,88);p.restore();
+}
+
+build();let W,H,cells=[],raf,start=performance.now();const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function resize(){cancelAnimationFrame(raf);W=innerWidth;H=innerHeight;const d=Math.min(devicePixelRatio||1,2);canvas.width=W*d;canvas.height=H*d;ctx.setTransform(d,0,0,d,0,0);let scale=Math.min(W*.98/700,H*.96/900),width=700*scale,height=900*scale,left=(W-width)/2,top=(H-height)/2,step=W<600?2.4:3.3,row=step*1.55;const sample=document.createElement('canvas');sample.width=Math.ceil(width/step);sample.height=Math.ceil(height/row);const s=sample.getContext('2d',{willReadFrequently:true});s.drawImage(source,0,0,sample.width,sample.height);const data=s.getImageData(0,0,sample.width,sample.height).data,ramp='.,:;i+tfjxX%#@';cells=[];for(let y=0;y<sample.height;y++)for(let x=0;x<sample.width;x++){let n=(y*sample.width+x)*4,a=data[n+3];if(a<45)continue;let r=data[n],g=data[n+1],b=data[n+2],lum=.2126*r+.7152*g+.0722*b;cells.push({x:left+x*step,y:top+y*row,color:`rgb(${r},${g},${b})`,alpha:a/255,char:ramp[Math.min(12,Math.floor(Math.pow(lum/255,.8)*13))],delay:(1-y/sample.height)*3+random()*.2})}ctx.font=`${step*1.6}px 'Courier New',monospace`;ctx.textBaseline='top';raf=requestAnimationFrame(frame)}
+function frame(now){ctx.globalAlpha=1;ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);for(let i=0;i<85;i++){ctx.globalAlpha=.12+(i%6)*.035;ctx.fillStyle='#c3c3af';ctx.beginPath();ctx.arc(((i*7919+113)%10000)/10000*W,((i*3571+739)%10000)/10000*H,.35+(i%5)*.12,0,7);ctx.fill()}let t=reduced?10:(now-start)/1000;for(const c of cells){let age=t-c.delay;if(age<=0)continue;ctx.globalAlpha=c.alpha*Math.min(1,age/.85);ctx.fillStyle=c.color;ctx.fillText(c.char,c.x,c.y)}ctx.globalAlpha=1;if(t<4.2&&!reduced)raf=requestAnimationFrame(frame)}addEventListener('resize',resize);resize();
+</script></body></html>

@@ -1,0 +1,3 @@
+Herramienta integrada image_gen, edición para extracción de fondo.
+Quitar únicamente el sofá beige y el fragmento negro superior de la foto; aislar al gatito naranja sobre transparencia real, manteniendo postura erguida, ojos grandes, proporciones de la cara, colores, orejas y patas completas; sin rediseño, texto, sombras de suelo ni objetos añadidos.
+El resultado se interpreta en una cuadrícula ASCII de 88 columnas con color cuantizado.

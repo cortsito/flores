@@ -1,0 +1,3 @@
+Herramienta: image_gen integrada.
+Prompt: ramo aislado sobre transparencia, dos peonías rosa claro, tres tulipanes carmesí y dos lotos marfil; follaje verde contenido; composición compacta en abanico, tallos convergiendo al 78% de la altura para encajar en la patita; ilustración botánica suave, sin gato, manos, texto, florero ni envoltura.
+La imagen se conserva en ramo-ia.png y se incluye embebida en index.html para funcionar como archivo autónomo.
