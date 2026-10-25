@@ -1,0 +1,35 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prueba · Dibujo antes del ASCII</title><style>html,body{margin:0;overflow:hidden;background:#000}canvas{display:block;width:100vw;height:100dvh}</style></head><body><canvas aria-label="Dibujo intermedio del ramo, mostrado directamente sin conversión a ASCII"></canvas><script>
+'use strict';
+const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d'),art=document.createElement('canvas');art.width=1000;art.height=1100;const p=art.getContext('2d');let seed=4821;const random=()=>((seed=(seed*1664525+1013904223)>>>0)/4294967296),rand=(a,b)=>a+(b-a)*random(),reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Nueva composición: un ramo ovalado sostenido por un haz de tallos central.
+const crimson=['#360b24','#a51b43','#ef4d68','#ffafa8'],wine=['#210e26','#70274f','#b75c85','#eda4b9'],obsidian=['#121923','#343247','#716278','#b0a0b6'],bone=['#59423c','#b99580','#f1d7b5','#fff3dd'];
+function curve(a,b,c,d,color,width){p.strokeStyle=color;p.lineWidth=width;p.lineCap='round';p.beginPath();p.moveTo(...a);p.bezierCurveTo(...b,...c,...d);p.stroke()}
+function foliage(x,y,len,angle){p.save();p.translate(x,y);p.rotate(angle);let g=p.createLinearGradient(-len*.2,0,len*.2,-len);g.addColorStop(0,'#102b24');g.addColorStop(.52,'#3f7e48');g.addColorStop(.85,'#8bbd68');g.addColorStop(1,'#c6d88a');p.fillStyle=g;p.beginPath();p.moveTo(0,0);for(let side of [-1,1]){if(side===1)p.moveTo(0,-len);p.bezierCurveTo(side*len*.24,-len*(side<0?.24:.83),side*len*.3,-len*(side<0?.66:.35),0,side<0?-len:0)}p.fill();p.strokeStyle='#b7d18e88';p.lineWidth=.9;p.beginPath();p.moveTo(0,0);p.lineTo(0,-len);for(let i=1;i<7;i++){let h=i/8;p.moveTo(0,-len*h);p.lineTo(-len*.19*Math.sin(h*Math.PI),-len*(h+.12));p.moveTo(0,-len*h);p.lineTo(len*.19*Math.sin(h*Math.PI),-len*(h+.12))}p.stroke();p.restore()}
+// Pétales asymétriques, aux rebords plissés et aux bases sombres.
+function flower(x,y,r,colors,kind,tilt){p.save();p.translate(x,y);p.rotate(tilt);p.scale(1,kind==='bud'?.76:.87);let rings=kind==='peony'?8:6;
+for(let ring=0;ring<rings;ring++){let rad=r*Math.pow(.77,ring),count=kind==='peony'?12+ring:5+ring%2,phase=ring*(kind==='peony'?1.37:2.39);for(let i=0;i<count;i++){p.save();p.rotate(i*2*Math.PI/count+phase+rand(-.09,.09));let length=rad*rand(.92,1.08),w=rad*(kind==='peony'?rand(.29,.39):.78);let g=p.createLinearGradient(-w*.4,-length*.2,w*.25,-length);g.addColorStop(0,colors[0]);g.addColorStop(.38,colors[1]);g.addColorStop(.78,colors[2]);g.addColorStop(1,colors[3]);p.fillStyle=g;p.beginPath();p.moveTo(-w*.14,-rad*.06);p.bezierCurveTo(-w*.7,-length*.25,-w*1.08,-length*.8,-w*.53,-length*.95);if(kind==='peony'){p.bezierCurveTo(-w*.35,-length*1.08,-w*.12,-length*.9,0,-length);p.bezierCurveTo(w*.13,-length*1.09,w*.35,-length*.91,w*.59,-length*.95)}else p.bezierCurveTo(-w*.1,-length*1.12,w*.45,-length*1.05,w*.7,-length*.83);p.bezierCurveTo(w*1.04,-length*.51,w*.42,-length*.17,w*.12,-rad*.06);p.closePath();p.fill();p.strokeStyle=colors[3]+'85';p.lineWidth=1.35;p.stroke();for(let j=0;j<5;j++){let xx=(j-2)*w*.16;p.strokeStyle=j%2?colors[3]+'30':colors[0]+'55';p.lineWidth=.8;p.beginPath();p.moveTo(0,-rad*.1);p.quadraticCurveTo(xx*.7,-length*.6,xx,-length*.94);p.stroke()}p.restore()}}p.restore()}
+function build(){seed=937;p.clearRect(0,0,1000,1100);
+// Arrière-plan végétal : lignes ascendantes et feuilles groupées, pas de remplissage aléatoire.
+const leaves=[[345,270,130,-.65],[625,245,135,.55],[255,405,145,-1],[750,400,145,.95],[205,570,135,-1.15],[790,590,125,1.12],[280,760,130,-1.05],[700,805,120,.9],[425,905,145,-.6],[570,920,140,.65],[370,380,105,-.25],[635,625,110,.6]];
+for(const [x,y,len,angle] of leaves){curve([500,1045],[490,880],[x,y+180],[x,y],'#477a43',2.3);foliage(x,y,len,angle);foliage(x,y+37,len*.6,-angle*.65)}
+// Couronne en trois plans : petites fleurs hautes, centre large, base effilée.
+const blooms=[
+[400,265,88,wine,'rose',-.35],[565,235,100,crimson,'peony',.3],
+[695,360,106,obsidian,'rose',.4],[285,440,92,crimson,'rose',-.45],
+[440,440,137,crimson,'peony',-.22],[625,505,113,bone,'rose',.35],
+[765,560,77,wine,'rose',.65],[270,635,90,obsidian,'rose',-.5],
+[455,675,126,wine,'peony',-.15],[645,730,105,crimson,'rose',.32],
+[415,845,91,obsidian,'rose',-.2],[550,890,75,crimson,'bud',.4]];
+for(const [x,y] of blooms){curve([500+rand(-16,16),1055],[485,905],[x+(500-x)*.2,y+160],[x,y],'#63934e',rand(2,4))}
+// Quelques boutons et une seule branche ivoire, en retrait des grandes fleurs.
+for(const [x,y] of [[270,300],[730,290],[800,470]]){curve([500,1000],[600,600],[x-30,y+80],[x,y],'#6e9856',1.7);foliage(x,y+25,52,.6);flower(x,y,25,wine,'bud',.4)}
+for(let i=0;i<7;i++){let x=220+Math.sin(i*1.8)*23,y=460+i*35;curve([370,840],[280,640],[200,y+50],[x,y],'#6b9658',1.1);flower(x,y,rand(9,15),bone,'rose',rand(-1,1))}
+for(const f of blooms)flower(...f);
+// Feuilles avant : elles réunissent le bas du bouquet sans cacher les corolles.
+foliage(465,1000,150,-.7);foliage(540,1010,140,.65);foliage(500,1040,100,.1);
+}
+build();
+// El mismo canvas intermedio, mostrado directamente: sin muestreo ni caracteres.
+function render(){const W=innerWidth,H=innerHeight,dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);const scale=Math.min(W*.99/art.width,H*.98/art.height),width=art.width*scale,height=art.height*scale;ctx.drawImage(art,(W-width)/2,(H-height)/2,width,height)}
+addEventListener('resize',render);render();
+</script></body></html>
