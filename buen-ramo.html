@@ -4,7 +4,6 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <script>if (new URLSearchParams(location.hash.slice(1)).has("m")) document.documentElement.classList.add("gift");</script>
     <title>Buen ramo · Para ti</title>
     <style>
         * {
@@ -241,31 +240,17 @@
                 right: 20px
             }
         }
+        footer { opacity: 0; }
     </style>
 </head>
 
 <body>
-    <canvas id="scene" aria-label="Ramo de novia con peonías, rosas, eucalipto y pequeñas flores dibujados con caracteres ASCII"></canvas>
-    <header>
-        <h1>Buen ramo</h1>
-    </header>
-    <div class="tools"><button id="edit">Escribir dedicatoria</button><button id="share">Copiar enlace</button><button
-            id="replay">Volver a florecer</button></div>
+    <canvas id="scene" aria-label="Animación ASCII de una persona que encuentra un ramo y lo entrega hacia la cámara"></canvas>
+
     <footer>
-        <p id="message">Hay flores que nunca se marchitan.</p>
-        <div id="signature">ESTAS SON PARA TI</div>
+        <p id="message">para ti</p>
     </footer>
     <div id="hint">hecho por luis cortés</div>
-    <dialog id="editor">
-        <form id="form">
-            <h2 style="font-weight:400;margin-top:0">Dilo con flores.</h2><label for="text">TU MENSAJE</label><textarea
-                id="text" maxlength="140">Hay flores que nunca se marchitan.</textarea><label for="from">UNA FIRMA, UN
-                NOMBRE, LO QUE QUIERAS</label><input id="from" maxlength="60" value="Estas son para ti">
-            <div class="actions"><button type="button" id="cancel">Cancelar</button><button type="submit">Guardar
-                    dedicatoria</button></div>
-            <p style="font:10px monospace;color:#999">Guarda tu mensaje y copia el enlace para regalar estas flores.</p>
-        </form>
-    </dialog>
     <script>
         'use strict';
         const canvas = document.querySelector('#scene'), ctx = canvas.getContext('2d');
@@ -312,22 +297,60 @@
             // Cinta de seda tenue que reúne el ramo.
             p.strokeStyle='#d6b6aa';p.lineWidth=6;p.beginPath();p.moveTo(324,799);p.quadraticCurveTo(350,810,378,800);p.stroke();p.lineWidth=3;p.beginPath();p.moveTo(352,805);p.bezierCurveTo(285,763,298,848,352,805);p.bezierCurveTo(410,761,405,842,352,805);p.moveTo(352,807);p.quadraticCurveTo(333,844,310,858);p.moveTo(354,807);p.quadraticCurveTo(369,850,394,866);p.stroke();
         }
-        bouquet(); let W, H, dpr, cells = [], start = performance.now(); const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        bouquet(); let sceneLayout; let W, H, dpr, cells = [], start = performance.now(); const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
         // Densidad: disminuir CELL genera más caracteres y detalle.
         let CELL = 4; const chars = ' .,:;i+tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$';
         const stars = Array.from({ length: 100 }, () => ({ x: random(), y: random(), r: range(.3, 1), phase: range(0, 7), speed: range(.4, 1) }));
-        function resize() { W = innerWidth; H = innerHeight; dpr = Math.min(devicePixelRatio || 1, 2); canvas.width = W * dpr; canvas.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); const gift = document.documentElement.classList.contains('gift'), wide = W > 600 && H < 500; const bottom = document.querySelector('footer').getBoundingClientRect().top - 12; const controls = document.querySelector('.tools').getBoundingClientRect(); const upper = gift ? Math.max(12, H * .025) : controls.bottom + 18; const available = Math.max(60, bottom - upper); let height = Math.min(available, 1100), width = height * 700 / 900; const maxWidth = wide ? W * .52 : W * .98; if (width > maxWidth) { width = maxWidth; height = width * 900 / 700 } let left = wide ? (W * .54 - width) / 2 : (W - width) / 2, top = upper + Math.max(0, (available - height) * .45); CELL = W <= 600 ? 2 : 2.8; const sample = document.createElement('canvas'); sample.width = Math.ceil(width / CELL); sample.height = Math.ceil(height / (CELL * 1.55)); const s = sample.getContext('2d', { willReadFrequently: true }); s.drawImage(source, 0, 0, sample.width, sample.height); const data = s.getImageData(0, 0, sample.width, sample.height).data; cells = []; for (let y = 0; y < sample.height; y++)for (let x = 0; x < sample.width; x++) { let i = (y * sample.width + x) * 4, r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3]; let lum = .2126 * r + .7152 * g + .0722 * b; if (a < 65 || lum < 15) continue; cells.push({ x: left + x * CELL, y: top + y * CELL * 1.55, color: `rgb(${r},${g},${b})`, char: chars[Math.min(chars.length - 1, Math.floor(lum / 255 * (chars.length - 1)))], delay: y / sample.height, noise: random() }) } }
-        function frame(now) { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H); let t = (now - start) / 1000; for (const s of stars) { ctx.globalAlpha = reduce ? .3 : .15 + (Math.sin(now * .0006 * s.speed + s.phase) + 1) * .2; ctx.fillStyle = '#c4c5b0'; ctx.beginPath(); ctx.arc(s.x * W, (s.y * H + (reduce ? 0 : t * s.speed * 2)) % H, s.r, 0, 7); ctx.fill() } ctx.font = `${CELL * 1.5}px 'Courier New',monospace`; ctx.textBaseline = 'top'; for (const c of cells) { let age = reduce ? 2 : t - c.delay * 3.3 - c.noise * .3; if (age < 0) continue; ctx.globalAlpha = Math.min(1, age * 1.8); ctx.fillStyle = c.color; ctx.fillText(age < .45 ? chars[Math.floor((c.noise * 73 + t * 18) % chars.length)] : c.char, c.x, c.y) } ctx.globalAlpha = 1; requestAnimationFrame(frame) }
-        addEventListener('resize', resize); if (window.visualViewport) visualViewport.addEventListener('resize', resize); new ResizeObserver(() => requestAnimationFrame(resize)).observe(document.querySelector('footer')); resize(); requestAnimationFrame(frame); document.querySelector('#replay').onclick = () => start = performance.now();
-        const editor = document.querySelector('#editor'), text = document.querySelector('#text'), from = document.querySelector('#from'); function apply() { document.querySelector('#message').textContent = text.value; document.querySelector('#signature').textContent = from.value.toUpperCase(); document.querySelector('#signature').hidden = !from.value.trim(); requestAnimationFrame(resize) }
-        // El fragmento de la URL contiene la dedicatoria; GitHub Pages sirve el mismo HTML.
-        function readLink() { const params = new URLSearchParams(location.hash.slice(1)); document.documentElement.classList.toggle('gift', params.has('m')); if (!params.has('m')) { requestAnimationFrame(resize); return false; } text.value = (params.get('m') || '').slice(0, 140); from.value = (params.get('f') || '').slice(0, 60); apply(); return true }
-        if (!readLink()) { try { const saved = JSON.parse(localStorage.getItem('flores-dedication')); if (saved && typeof saved.text === 'string' && typeof saved.from === 'string') { text.value = saved.text.slice(0, 140); from.value = saved.from.slice(0, 60); apply() } } catch { } }
-        addEventListener('hashchange', readLink);
-        function link() { const url = new URL(location.href); url.hash = new URLSearchParams({ m: text.value, f: from.value }).toString(); return url.href }
-        document.querySelector('#edit').onclick = () => editor.showModal(); document.querySelector('#cancel').onclick = () => editor.close(); document.querySelector('#form').onsubmit = e => { e.preventDefault(); apply(); try { localStorage.setItem('flores-dedication', JSON.stringify({ text: text.value, from: from.value })) } catch { } editor.close() };
-        const share = document.querySelector('#share'); share.onclick = async () => { const url = link(); if (location.protocol === 'file:') { window.alert('Cuando publiques esta página en GitHub Pages, este botón copiará tu enlace compartible. Por ahora puedes editar y ver tu dedicatoria aquí.'); return } try { await navigator.clipboard.writeText(url); share.textContent = 'Enlace copiado'; setTimeout(() => share.textContent = 'Copiar enlace', 2200) } catch { window.prompt('Copia este enlace para compartir tu dedicatoria:', url) } };
+        function resize() { previousFrame = -1; W = innerWidth; H = innerHeight; dpr = Math.min(devicePixelRatio || 1, 2); canvas.width = W * dpr; canvas.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); const wide = W > 600 && H < 500; const bottom = document.querySelector('footer').getBoundingClientRect().top - 12; const upper = Math.max(12, H * .025); const available = Math.max(60, bottom - upper); let height = Math.min(available, 1100), width = height * 700 / 900; const maxWidth = wide ? W * .52 : W * .98; if (width > maxWidth) { width = maxWidth; height = width * 900 / 700 } let left = wide ? (W * .54 - width) / 2 : (W - width) / 2, top = upper + Math.max(0, (available - height) * .45); sceneLayout = {left,top,width,height}; CELL = W <= 600 ? 2 : 2.8; const sample = document.createElement('canvas'); sample.width = Math.ceil(width / CELL); sample.height = Math.ceil(height / (CELL * 1.55)); const s = sample.getContext('2d', { willReadFrequently: true }); s.drawImage(source, 0, 0, sample.width, sample.height); const data = s.getImageData(0, 0, sample.width, sample.height).data; cells = []; for (let y = 0; y < sample.height; y++)for (let x = 0; x < sample.width; x++) { let i = (y * sample.width + x) * 4, r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3]; let lum = .2126 * r + .7152 * g + .0722 * b; if (a < 65 || lum < 15) continue; cells.push({ x: left + x * CELL, y: top + y * CELL * 1.55, color: `rgb(${r},${g},${b})`, char: chars[Math.min(chars.length - 1, Math.floor(lum / 255 * (chars.length - 1)))], delay: y / sample.height, noise: random() }) } }
+        // Película procedural a 24 fotogramas por segundo. Tiempos en segundos.
+        const film=document.createElement('canvas');film.width=700;film.height=900;
+        const ink=film.getContext('2d'),grid=document.createElement('canvas'),pixels=grid.getContext('2d',{willReadFrequently:true});
+        const clamp=v=>Math.max(0,Math.min(1,v)),ease=v=>{v=clamp(v);return v*v*(3-2*v)},mix=(a,b,t)=>a+(b-a)*t;
+        const caption=document.querySelector('footer');let previousFrame=-1;
+        function line(points,color,width){ink.strokeStyle=color;ink.lineWidth=width;ink.lineCap='round';ink.lineJoin='round';ink.beginPath();points.forEach(([x,y],i)=>i?ink.lineTo(x,y):ink.moveTo(x,y));ink.stroke()}
+        function oval(x,y,rx,ry,color){ink.fillStyle=color;ink.beginPath();ink.ellipse(x,y,rx,ry,0,0,Math.PI*2);ink.fill()}
+        function hand(x,y,scale,alpha=1){ink.save();ink.globalAlpha=alpha;ink.translate(x,y);ink.scale(scale,scale);line([[4,155],[0,45]],'#c08b74',39);line([[-7,147],[-12,50]],'#edb79a',22);oval(0,21,27,37,'#efb99c');for(let i=0;i<4;i++)line([[-17+i*11,22],[-21+i*12,-12-i*2],[-14+i*11,-24-i*2]],i%2?'#f5c6a9':'#e5aa8b',10);line([[19,39],[34,15],[24,0]],'#ffd0af',13);line([[-15,39],[10,42]],'#bd826d',2);ink.restore()}
+        function person(x,y,walk,bend,turn,reach,alpha,t){
+            ink.save();ink.globalAlpha=alpha;ink.translate(x,y);let stride=Math.sin(t*8)*walk,bob=Math.abs(Math.cos(t*8))*3*walk;
+            line([[-13,-90],[-20+stride*22,-46],[-22+stride*30,0]],'#697a8b',24);line([[13,-90],[20-stride*22,-46],[21-stride*30,0]],'#a0afba',24);
+            line([[-24+stride*30,0],[-7+stride*30,0]],'#e8ddc5',15);line([[20-stride*30,0],[37-stride*30,0]],'#e8ddc5',15);
+            ink.save();ink.translate(0,-91-bob);ink.rotate(bend*.85);let broad=mix(24,36,turn);
+            line([[0,-5],[0,-100]],'#839e92',broad*2);line([[-broad*.5,-92],[-broad*.5,-20]],'#b6c7ac',13);
+            line([[-broad,-83],[-38-stride*17,-47],[-27-stride*24,-14]],'#a5b8a3',17);oval(-27-stride*24,-14,9,11,'#eabc9e');
+            const hx=mix(35,67,reach),hy=mix(-10,-65,reach);line([[broad,-83],[49,-48],[hx,hy]],'#c0cdb3',19);oval(hx,hy,10,12,'#efb99c');
+            line([[0,-107],[0,-119]],'#d39f84',18);oval(0,-145,30,36,'#efb99c');oval(-3,-166,31,20,'#483b38');oval(-22,-147,10,22,'#483b38');
+            if(turn>.25){oval(-10,-147,2.7,3.3,'#362c2c');oval(12,-147,2.7,3.3,'#362c2c');line([[-5,-132],[1,-129],[8,-133]],'#9f6557',2)}else{oval(21,-148,3,3,'#362c2c');oval(29,-139,6,4,'#efb99c')}
+            ink.restore();ink.restore()
+        }
+        function drawFilm(t){
+            ink.clearRect(0,0,700,900);
+            let pickup=ease((t-5.4)/1.8),turn=ease((t-7.2)/1.7),offer=ease((t-9.3)/3.8),fade=ease((t-10.5)/2.7);
+            // El suelo en perspectiva desaparece durante el gesto final.
+            ink.globalAlpha=1-fade;line([[15,780],[350,688],[685,780]],'#393b36',1.5);line([[40,892],[350,688],[660,892]],'#252d29',1.3);
+            for(let i=0;i<48;i++){let x=(i*137.7)%700,y=180+(i*79.3)%500;oval(x,y,1.3,1.3,'#7a8073')}
+            for(let i=0;i<16;i++){let x=i*47;line([[x,775],[x-5,755],[x+2,765],[x+8,748]],'#3d5844',2)}ink.globalAlpha=1;
+            let actorX=mix(-85,302,ease(t/4)),ground=777;
+            let bend=ease((t-4.6)/.9)*(1-ease((t-6.4)/1));
+            // Pausa para mirar las flores, agacharse y girar hacia quien observa.
+            person(actorX,ground,t<3.9?1-ease((t-3.1)/.8):0,bend,turn,pickup,1-fade,t);
+            let bx=mix(478,376,pickup),by=mix(754,612,pickup),size=mix(180,215,pickup),angle=mix(.92,-.12,pickup);
+            bx=mix(bx,350,offer);by=mix(by,765,offer);size=mix(size,850,offer);angle=mix(angle,0,offer);
+            // La mano se acerca con el ramo y permanece cuando el cuerpo se desvanece.
+            let gripX=bx,gripY=by;hand(gripX,gripY,mix(.24,1.22,offer),ease((t-8.9)/1.1));
+            ink.save();ink.translate(bx,by);ink.rotate(angle);ink.drawImage(source,-size*350/900,-size*810/900,size*700/900,size);ink.restore();
+            caption.style.opacity=String(ease((t-12.2)/1.3));
+        }
+        function frame(now){
+            requestAnimationFrame(frame);const t=reduce?15:Math.min(15,(now-start)/1000),index=Math.floor(t*24);if(index===previousFrame)return;previousFrame=index;
+            drawFilm(t);ctx.globalAlpha=1;ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);if(!sceneLayout)return;
+            const {left,top,width,height}=sceneLayout;grid.width=Math.max(1,Math.ceil(width/CELL));grid.height=Math.max(1,Math.ceil(height/(CELL*1.55)));pixels.drawImage(film,0,0,grid.width,grid.height);const data=pixels.getImageData(0,0,grid.width,grid.height).data;
+            ctx.font=`${CELL*1.5}px 'Courier New',monospace`;ctx.textBaseline='top';
+            for(let y=0;y<grid.height;y++)for(let x=0;x<grid.width;x++){const i=(y*grid.width+x)*4,a=data[i+3];if(a<30)continue;const r=data[i],g=data[i+1],b=data[i+2],lum=.2126*r+.7152*g+.0722*b;if(lum<12)continue;ctx.globalAlpha=a/255;ctx.fillStyle=`rgb(${r},${g},${b})`;ctx.fillText(chars[Math.max(1,Math.floor(lum/255*(chars.length-1)))],left+x*CELL,top+y*CELL*1.55)}ctx.globalAlpha=1;
+        }
+        addEventListener('resize', resize);
+        if (window.visualViewport) visualViewport.addEventListener('resize', resize);
+        new ResizeObserver(() => requestAnimationFrame(resize)).observe(caption);
+        resize(); requestAnimationFrame(frame);
     </script>
 </body>
-
 </html>
