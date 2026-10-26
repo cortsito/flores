@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <script>if (new URLSearchParams(location.hash.slice(1)).has("m")) document.documentElement.classList.add("gift");</script>
+    <title>Rosas de luz · Para ti</title>
+    <style>
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            margin: 0;
+            min-height: 100%;
+            background: #000;
+            color: #f4efd9;
+            font-family: Georgia, serif
+        }
+
+        body {
+            height: 100svh;
+            overflow: hidden
+        }
+
+        canvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: block
+        }
+
+        header {
+            position: fixed;
+            top: max(24px, env(safe-area-inset-top));
+            left: 32px;
+            z-index: 2
+        }
+
+        h1 {
+            font-size: 25px;
+            font-weight: 400;
+            margin: 0
+        }
+
+        footer {
+            position: fixed;
+            bottom: calc(46px + env(safe-area-inset-bottom));
+            left: 24px;
+            right: 24px;
+            text-align: center;
+            pointer-events: none
+        }
+
+        #message {
+            max-width: 760px;
+            overflow-wrap: anywhere;
+            white-space: pre-line;
+            font-size: clamp(20px, 3vw, 34px);
+            line-height: 1.35;
+            font-style: italic;
+            margin: 0 auto 12px;
+            text-wrap: pretty
+        }
+
+        #signature {
+            max-width: 650px;
+            margin: auto;
+            overflow-wrap: anywhere;
+            font: 11px/1.6 monospace;
+            color: #9d9787;
+            letter-spacing: 2px
+        }
+
+        .tools {
+            position: fixed;
+            right: 30px;
+            top: 24px;
+            display: flex;
+            gap: 8px;
+            z-index: 3
+        }
+
+        button {
+            min-height: 44px;
+            border: 1px solid #38372f;
+            background: #090a08e8;
+            color: #c9c5b1;
+            border-radius: 24px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font: 11px monospace
+        }
+
+        button:hover {
+            border-color: #b7a96f;
+            color: #fff
+        }
+
+        button:focus-visible,
+        input:focus-visible,
+        textarea:focus-visible {
+            outline: 2px solid #d98ca6;
+            outline-offset: 3px
+        }
+
+        dialog {
+            background: #10120e;
+            color: #eae5cf;
+            border: 1px solid #444634;
+            border-radius: 18px;
+            padding: 24px;
+            width: min(440px, 92vw);
+            max-height: 85dvh;
+            overflow: auto
+        }
+
+        dialog::backdrop {
+            background: #000b;
+            backdrop-filter: blur(8px)
+        }
+
+        label {
+            display: block;
+            font: 12px/1.5 monospace;
+            margin: 18px 0 8px
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            background: #000;
+            color: #eee8cf;
+            border: 1px solid #3b3d30;
+            border-radius: 6px;
+            padding: 12px;
+            font: 16px Georgia
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 20px
+        }
+
+        #hint {
+            position: fixed;
+            bottom: calc(14px + env(safe-area-inset-bottom));
+            width: 100%;
+            text-align: center;
+            font: 10px monospace;
+            color: #777164
+        }
+
+        .gift header,
+        .gift .tools,
+        .gift #hint,
+        .gift dialog {
+            display: none
+        }
+
+        .gift footer {
+            bottom: calc(24px + env(safe-area-inset-bottom))
+        }
+
+        @media(max-width:600px) {
+            header {
+                top: calc(16px + env(safe-area-inset-top));
+                left: 20px
+            }
+
+            h1 {
+                font-size: 22px
+            }
+
+            .tools {
+                top: calc(54px + env(safe-area-inset-top));
+                left: 16px;
+                right: 16px;
+                gap: 6px
+            }
+
+            .tools button {
+                flex: 1;
+                padding: 8px 6px;
+                font-size: 10px
+            }
+
+            footer {
+                left: 22px;
+                right: 22px;
+                bottom: calc(44px + env(safe-area-inset-bottom))
+            }
+
+            #message {
+                font-size: clamp(19px, 5.5vw, 25px);
+                line-height: 1.4
+            }
+
+            #signature {
+                font-size: 10px;
+                letter-spacing: 1.4px
+            }
+
+            .gift footer {
+                bottom: calc(25px + env(safe-area-inset-bottom))
+            }
+        }
+
+        @media(max-height:500px) and (min-width:601px) {
+            h1 {
+                font-size: 20px
+            }
+
+            .tools button {
+                min-height: 36px
+            }
+
+            #message {
+                font-size: 20px
+            }
+
+            footer,
+            .gift footer {
+                left: 58%;
+                right: 24px;
+                bottom: 24%
+            }
+
+            #hint {
+                width: auto;
+                right: 20px
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="scene" aria-label="Ramo de cinco rosas con hojas dentadas dibujados con caracteres ASCII"></canvas>
+    <header>
+        <h1>Rosas de luz</h1>
+    </header>
+    <div class="tools"><button id="edit">Escribir dedicatoria</button><button id="share">Copiar enlace</button><button
+            id="replay">Volver a florecer</button></div>
+    <footer>
+        <p id="message">Hay flores que nunca se marchitan.</p>
+        <div id="signature">ESTAS SON PARA TI</div>
+    </footer>
+    <div id="hint">hecho por luis cortés</div>
+    <dialog id="editor">
+        <form id="form">
+            <h2 style="font-weight:400;margin-top:0">Dilo con flores.</h2><label for="text">TU MENSAJE</label><textarea
+                id="text" maxlength="140">Hay flores que nunca se marchitan.</textarea><label for="from">UNA FIRMA, UN
+                NOMBRE, LO QUE QUIERAS</label><input id="from" maxlength="60" value="Estas son para ti">
+            <div class="actions"><button type="button" id="cancel">Cancelar</button><button type="submit">Guardar
+                    dedicatoria</button></div>
+            <p style="font:10px monospace;color:#999">Guarda tu mensaje y copia el enlace para regalar estas flores.</p>
+        </form>
+    </dialog>
+    <script>
+        'use strict';
+        const canvas = document.querySelector('#scene'), ctx = canvas.getContext('2d');
+        const source = document.createElement('canvas'); source.width = 700; source.height = 900; const p = source.getContext('2d');
+        let seed = 21; function random() { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296 } function range(a, b) { return a + (b - a) * random() }
+        // Todo el ramo se construye aquí: cinco rosas, sus ramas y hojas compuestas.
+        function roseLeaf(x,y,len,w,angle){p.save();p.translate(x,y);p.rotate(angle);
+            let g=p.createLinearGradient(-w,0,w,-len);g.addColorStop(0,'#103d2d');g.addColorStop(.45,'#397548');g.addColorStop(.78,'#70a565');g.addColorStop(1,'#b3c987');p.fillStyle=g;
+            // Contorno dentado de un foliolo, con ápice afilado.
+            p.beginPath();p.moveTo(0,0);for(let i=1;i<=22;i++){let t=i/23,wide=w*Math.sin(Math.PI*t)**.85*(i%2?.87:1.07);p.lineTo(-wide,-len*t)}p.lineTo(0,-len);for(let i=22;i>=1;i--){let t=i/23,wide=w*Math.sin(Math.PI*t)**.85*(i%2?.87:1.07);p.lineTo(wide,-len*t)}p.closePath();p.fill();p.strokeStyle='#a6bd7b99';p.lineWidth=1.1;p.beginPath();p.moveTo(0,0);p.lineTo(0,-len*.96);p.stroke();
+            for(let i=1;i<7;i++){let t=i/8,yy=-len*t,xx=w*Math.sin(Math.PI*t)**.85*.9;p.strokeStyle=i%2?'#b3cb8b55':'#153f2c88';p.lineWidth=.8;p.beginPath();p.moveTo(0,yy+len*.09);p.quadraticCurveTo(-xx*.5,yy,-xx,yy-len*.035);p.moveTo(0,yy+len*.09);p.quadraticCurveTo(xx*.5,yy,xx,yy-len*.035);p.stroke()}p.restore()}
+        function leafBranch(x,y,len,angle){p.save();p.translate(x,y);p.rotate(angle);p.strokeStyle='#69935b';p.lineWidth=2.1;p.beginPath();p.moveTo(0,0);p.quadraticCurveTo(-4,-len*.5,0,-len);p.stroke();
+            roseLeaf(0,-len*.15,len*.52,len*.15,-.83);roseLeaf(0,-len*.2,len*.49,len*.145,.88);
+            roseLeaf(-1,-len*.52,len*.43,len*.13,-.67);roseLeaf(-1,-len*.56,len*.42,len*.125,.7);
+            roseLeaf(0,-len*.8,len*.52,len*.15,.02);p.restore()}
+        function stem(x,y,baseX,bend,width){let g=p.createLinearGradient(baseX,850,x,y);g.addColorStop(0,'#1e4a34');g.addColorStop(.6,'#517f46');g.addColorStop(1,'#86a15c');p.strokeStyle=g;p.lineWidth=width;p.lineCap='round';p.beginPath();p.moveTo(baseX,852);p.bezierCurveTo(baseX+bend,717,x+(350-x)*.12,y+150,x,y);p.stroke();p.strokeStyle='#aec67b66';p.lineWidth=1;p.beginPath();p.moveTo(baseX-1,849);p.bezierCurveTo(baseX+bend-1,717,x+(350-x)*.12-1,y+150,x-1,y);p.stroke()}
+        function rose(x,y,r,color,rotation){p.save();p.translate(x,y);p.rotate(rotation);p.scale(1,.87);
+            // Sépales sous la corolle, visibles entre les pétales extérieurs.
+            for(let i=0;i<5;i++){p.save();p.rotate(i*Math.PI*2/5);p.fillStyle='#284c31';p.beginPath();p.moveTo(-r*.12,r*.1);p.quadraticCurveTo(-r*.3,-r*.6,0,-r*1.06);p.quadraticCurveTo(r*.3,-r*.5,r*.12,r*.1);p.fill();p.restore()}
+            for(let ring=0;ring<7;ring++){let rad=r*Math.pow(.76,ring),count=ring<3?5:4;for(let i=0;i<count;i++){p.save();p.rotate(i*Math.PI*2/count+ring*2.399+range(-.07,.07));let len=rad*range(.96,1.045),w=rad*range(.68,.8);let g=p.createLinearGradient(-w*.5,0,w*.3,-len);g.addColorStop(0,color[0]);g.addColorStop(.32,color[0]);g.addColorStop(.58,color[1]);g.addColorStop(.86,color[2]);g.addColorStop(1,color[1]);p.fillStyle=g;p.beginPath();p.moveTo(-w*.17,len*.08);p.bezierCurveTo(-w*.7,-len*.13,-w*1.05,-len*.64,-w*.59,-len*.9);p.bezierCurveTo(-w*.27,-len*1.09,w*.34,-len*1.06,w*.68,-len*.84);p.bezierCurveTo(w*1.03,-len*.53,w*.58,-len*.12,w*.12,len*.08);p.closePath();p.fill();
+                // Rebord clair recourbé et ombre juste en dessous, plutôt qu'une nervure pointue.
+                p.strokeStyle=color[2]+'aa';p.lineWidth=1.2;p.beginPath();p.moveTo(-w*.59,-len*.9);p.bezierCurveTo(-w*.27,-len*1.09,w*.34,-len*1.06,w*.68,-len*.84);p.stroke();p.strokeStyle=color[0]+'88';p.lineWidth=1.8;p.beginPath();p.moveTo(-w*.48,-len*.81);p.bezierCurveTo(-w*.16,-len*.94,w*.28,-len*.94,w*.52,-len*.77);p.stroke();
+                for(let j=0;j<3;j++){let xx=(j-1)*w*.25;p.strokeStyle=color[2]+'18';p.lineWidth=.7;p.beginPath();p.moveTo(0,0);p.quadraticCurveTo(xx,-len*.5,xx,-len*.83);p.stroke()}p.restore()}}
+            p.strokeStyle=color[2]+'aa';p.lineWidth=1.5;p.beginPath();for(let i=0;i<=60;i++){let t=i/60,a=t*Math.PI*3.5,rr=r*(.015+.09*t),xx=Math.cos(a)*rr,yy=Math.sin(a)*rr;i?p.lineTo(xx,yy):p.moveTo(xx,yy)}p.stroke();p.restore()}
+        function bouquet(){seed=133;p.clearRect(0,0,700,900);
+            const wine=['#511b32','#a94363','#e79bb0'],red=['#721d35','#cb526a','#f9a8ae'],blush=['#88505d','#d59aa8','#ffe3df'];
+            // Courbes choisies pour les cinq fleurs, sans réutiliser le feuillage aléatoire initial.
+            stem(327,223,346,-20,5);stem(474,352,367,17,4.5);stem(204,415,334,-36,4.5);stem(365,504,355,-8,5);stem(475,625,379,28,4);
+            leafBranch(348,758,145,-.76);leafBranch(371,738,132,.79);leafBranch(295,599,116,-.93);leafBranch(418,540,101,.91);leafBranch(322,407,85,-.68);leafBranch(428,326,77,.6);
+            // Quelques épines en retrait, orientées vers la base de la plante.
+            for(const [x,y,side]of [[341,792,-1],[371,780,1],[316,676,-1],[391,646,1]]){p.fillStyle='#6e6944';p.beginPath();p.moveTo(x,y-6);p.quadraticCurveTo(x+side*4,y+3,x+side*10,y+8);p.lineTo(x,y+4);p.fill()}
+            rose(327,223,110,blush,.23);rose(474,352,108,wine,.5);rose(204,415,111,red,-.4);rose(365,504,135,red,.12);rose(475,625,103,blush,.38);
+        }
+        bouquet(); let W, H, dpr, cells = [], start = performance.now(); const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        // Densidad: disminuir CELL genera más caracteres y detalle.
+        let CELL = 4; const chars = ' .,:;i+tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$';
+        const stars = Array.from({ length: 100 }, () => ({ x: random(), y: random(), r: range(.3, 1), phase: range(0, 7), speed: range(.4, 1) }));
+        function resize() { W = innerWidth; H = innerHeight; dpr = Math.min(devicePixelRatio || 1, 2); canvas.width = W * dpr; canvas.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); const gift = document.documentElement.classList.contains('gift'), wide = W > 600 && H < 500; const bottom = document.querySelector('footer').getBoundingClientRect().top - 12; const controls = document.querySelector('.tools').getBoundingClientRect(); const upper = gift ? Math.max(12, H * .025) : controls.bottom + 18; const available = Math.max(60, bottom - upper); let height = Math.min(available, 1100), width = height * 700 / 900; const maxWidth = wide ? W * .52 : W * .98; if (width > maxWidth) { width = maxWidth; height = width * 900 / 700 } let left = wide ? (W * .54 - width) / 2 : (W - width) / 2, top = upper + Math.max(0, (available - height) * .45); CELL = W <= 600 ? 2.6 : 4; const sample = document.createElement('canvas'); sample.width = Math.ceil(width / CELL); sample.height = Math.ceil(height / (CELL * 1.55)); const s = sample.getContext('2d', { willReadFrequently: true }); s.drawImage(source, 0, 0, sample.width, sample.height); const data = s.getImageData(0, 0, sample.width, sample.height).data; cells = []; for (let y = 0; y < sample.height; y++)for (let x = 0; x < sample.width; x++) { let i = (y * sample.width + x) * 4, r = data[i], g = data[i + 1], b = data[i + 2], a = data[i + 3]; let lum = .2126 * r + .7152 * g + .0722 * b; if (a < 65 || lum < 15) continue; cells.push({ x: left + x * CELL, y: top + y * CELL * 1.55, color: `rgb(${r},${g},${b})`, char: chars[Math.min(chars.length - 1, Math.floor(lum / 255 * (chars.length - 1)))], delay: y / sample.height, noise: random() }) } }
+        function frame(now) { ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H); let t = (now - start) / 1000; for (const s of stars) { ctx.globalAlpha = reduce ? .3 : .15 + (Math.sin(now * .0006 * s.speed + s.phase) + 1) * .2; ctx.fillStyle = '#c4c5b0'; ctx.beginPath(); ctx.arc(s.x * W, (s.y * H + (reduce ? 0 : t * s.speed * 2)) % H, s.r, 0, 7); ctx.fill() } ctx.font = `${CELL * 1.5}px 'Courier New',monospace`; ctx.textBaseline = 'top'; for (const c of cells) { let age = reduce ? 2 : t - c.delay * 3.3 - c.noise * .3; if (age < 0) continue; ctx.globalAlpha = Math.min(1, age * 1.8); ctx.fillStyle = c.color; ctx.fillText(age < .45 ? chars[Math.floor((c.noise * 73 + t * 18) % chars.length)] : c.char, c.x, c.y) } ctx.globalAlpha = 1; requestAnimationFrame(frame) }
+        addEventListener('resize', resize); if (window.visualViewport) visualViewport.addEventListener('resize', resize); new ResizeObserver(() => requestAnimationFrame(resize)).observe(document.querySelector('footer')); resize(); requestAnimationFrame(frame); document.querySelector('#replay').onclick = () => start = performance.now();
+        const editor = document.querySelector('#editor'), text = document.querySelector('#text'), from = document.querySelector('#from'); function apply() { document.querySelector('#message').textContent = text.value; document.querySelector('#signature').textContent = from.value.toUpperCase(); document.querySelector('#signature').hidden = !from.value.trim(); requestAnimationFrame(resize) }
+        // El fragmento de la URL contiene la dedicatoria; GitHub Pages sirve el mismo HTML.
+        function readLink() { const params = new URLSearchParams(location.hash.slice(1)); document.documentElement.classList.toggle('gift', params.has('m')); if (!params.has('m')) { requestAnimationFrame(resize); return false; } text.value = (params.get('m') || '').slice(0, 140); from.value = (params.get('f') || '').slice(0, 60); apply(); return true }
+        if (!readLink()) { try { const saved = JSON.parse(localStorage.getItem('rosas-dedication')); if (saved && typeof saved.text === 'string' && typeof saved.from === 'string') { text.value = saved.text.slice(0, 140); from.value = saved.from.slice(0, 60); apply() } } catch { } }
+        addEventListener('hashchange', readLink);
+        function link() { const url = new URL(location.href); url.hash = new URLSearchParams({ m: text.value, f: from.value }).toString(); return url.href }
+        document.querySelector('#edit').onclick = () => editor.showModal(); document.querySelector('#cancel').onclick = () => editor.close(); document.querySelector('#form').onsubmit = e => { e.preventDefault(); apply(); try { localStorage.setItem('rosas-dedication', JSON.stringify({ text: text.value, from: from.value })) } catch { } editor.close() };
+        const share = document.querySelector('#share'); share.onclick = async () => { const url = link(); if (location.protocol === 'file:') { window.alert('Cuando publiques esta página en GitHub Pages, este botón copiará tu enlace compartible. Por ahora puedes editar y ver tu dedicatoria aquí.'); return } try { await navigator.clipboard.writeText(url); share.textContent = 'Enlace copiado'; setTimeout(() => share.textContent = 'Copiar enlace', 2200) } catch { window.prompt('Copia este enlace para compartir tu dedicatoria:', url) } };
+    </script>
+</body>
+
+</html>
